@@ -1,4 +1,3 @@
-# WebMining-RecSys
 # DRR: Deep Reinforcement Learning based Recommendation
 
 Deep Reinforcement Learning–based Recommendation (DRR) là mô hình gợi ý sử dụng **Actor–Critic (DDPG)** để tối ưu hóa quyết định gợi ý theo chuỗi tương tác người dùng, tập trung vào **phần thưởng dài hạn** thay vì dự đoán rating độc lập.
@@ -25,7 +24,7 @@ Sử dụng thuật toán **Deep Deterministic Policy Gradient (DDPG)**:
 
 ##  Evaluation Metrics
 *   **Offline:** Precision@k, NDCG@k thông qua phương pháp re-ranking tập ứng viên,.
-*   **Online Simulator:** Total accumulated rewards dựa trên môi trường giả lập PMF.
+*   **Online Simulator:** Tổng phần thưởng tích lũy (Total accumulated rewards) dựa trên môi trường giả lập PMF,.
 
 ## 📁 Dataset
 
@@ -75,4 +74,4 @@ python eval.py
 ---
 
 ## 📈 Results Visualization
-![image](DRR/src/save_model/trail-2026-01-22-14/images/progress.png)
+![image](save_model/trail-2026-01-22-14/images/progress.png)
