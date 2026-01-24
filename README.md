@@ -75,4 +75,20 @@ python eval.py
 ---
 
 ## 📈 Results Visualization
-![image](DRR/src/save_model/trail-2026-01-22-14/images/progress.png)
+![image](DRR/src/save_model/trail-2026-01-23-14/images/progress.png)
+
+## 📊 Final Evaluation Results (MovieLens 1M)
+
+**Number of evaluated users:** 1208  
+**Evaluation type:** DRR
+
+| Metric        | Value    |
+|--------------|---------:|
+| Precision@5  | 0.4807   |
+| Precision@10 | 0.5099   |
+| NDCG@5       | 0.4741   |
+| NDCG@10      | 0.4964   |
+
+## 📈 Demo App
+![demo](Demo/demo1.png)
+![demo](Demo/demo2.png)
