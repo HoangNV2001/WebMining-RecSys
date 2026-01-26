@@ -1,0 +1,229 @@
+REPORT GENERATED AT: 2026-01-26 01:35:15.918343
+============================================================
+
+[1/7] LOADING DATA MOVIELENS 1M...
+   - Movies: 3883
+   - Users:  6040
+   - Ratings:1000209 (Merged Full Columns)
+
+[2/7] BASIC DATA ANALYSIS...
+   -> Checking Null Values:
+Series([], dtype: int64)
+   -> Thống kê cơ bản:
+      + Số User: 6040
+      + Số Item: 3706
+      + Độ thưa (Sparsity): 95.5316%
+   [PLOT SAVED] 00_Basic_User_Rating_Hist.png
+   [PLOT SAVED] 00_Basic_Movie_Popularity_Hist.png
+
+[3/7] DEEP EDA (SAVING PLOTS)...
+   [PLOT SAVED] 01_Rating_Distribution.png
+   [PLOT SAVED] 02_Popularity_Quality.png
+   [PLOT SAVED] 03_Activity_Heatmap.png
+   [PLOT SAVED] 04_Age_Distribution.png
+   [PLOT SAVED] 05_Genre_Age_Heatmap.png
+   [PLOT SAVED] 06_Occupation_Activity.png
+   [PLOT SAVED] 07_Trend_Lifespan.png
+   [PLOT SAVED] 08_Generation_Gap.png
+
+[4/7] BUILDING HYBRID RECOMMENDER...
+
+[5/7] SPLITTING DATA (Temporal User Split)...
+   - Train Size: 260339 (Có cột age_group: True)
+   - Test Size:  66074
+   -> Pre-computing statistics (Grouping by Week/Age)...
+
+[6/7] EVALUATION SCENARIOS...
+
+--- MODE 1: NORMAL (Random Sample Users) ---
+      ...Processed 500/2000 users
+      ...Processed 1000/2000 users
+      ...Processed 1500/2000 users
+Precision@5: 0.1076
+NDCG@5     : 0.1098
+Precision@10: 0.0969
+NDCG@10     : 0.1048
+
+--- MODE 2: EASY (Active Users > 50 ratings: 1389 users) ---
+      ...Processed 500/1389 users
+      ...Processed 1000/1389 users
+Precision@5: 0.1076
+NDCG@5     : 0.1098
+Precision@10: 0.1236  (Diff: +0.0267)
+NDCG@10     : 0.1294  (Diff: +0.0246)
+
+--- MODE 2: EASY (Active Users > 100 ratings: 948 users) ---
+      ...Processed 500/948 users
+Precision@5: 0.1076
+NDCG@5     : 0.1098
+Precision@10: 0.1507  (Diff: +0.0538)
+NDCG@10     : 0.1571  (Diff: +0.0523)
+
+--- MODE 2: SUPER EASY (Active Users > 150 ratings: 680 users) ---
+      ...Processed 500/680 users
+Precision@5: 0.1076
+NDCG@5     : 0.1098
+Precision@10: 0.1741  (Diff: +0.0772)
+NDCG@10     : 0.1809  (Diff: +0.0762)
+
+[7/7] DEMO RECOMMENDATION...
+User: 5530 | Age: 18-24 | Job: College/Grad Student
+Predict Date: 2000-06-03
+User Profile: {'Comedy', 'Drama', 'Romance'}
+   1. Star Wars: Episode V - The Empire Strike   [MATCH]
+   2. Star Wars: Episode VI - Return of the Je   [MATCH]
+   3. Schindler's List (1993)                    [MATCH]
+   4. Titanic (1997)                             [MATCH]
+   5. 2001: A Space Odyssey (1968)               [MATCH]
+   6. Life Is Beautiful (La Vita è bella) (199   [MATCH]
+   7. Gladiator (2000)                           [MATCH]
+   8. Monty Python and the Holy Grail (1974)     [MATCH]
+   9. One Flew Over the Cuckoo's Nest (1975)     [MATCH]
+   10. Eyes Wide Shut (1999)                      [MATCH]
+
+# COMPLETED  
+**CHECK `FINAL_ANALYSIS_OUTPUT` FOR FILES**
+
+---
+
+## 1. CƠ CHẾ GỢI Ý (LOGIC CỦA MODEL)
+
+Mô hình này **không dùng Deep Learning phức tạp** mà sử dụng phương pháp **Weighted Trending (Xu hướng có trọng số)**.
+
+Quy trình gợi ý cho **một User** diễn ra như sau:
+
+---
+
+### Bước 1: Tính điểm **“Độ Hot” (Trending Score)**
+
+Hệ thống xét **4 tuần gần nhất** kể từ thời điểm dự đoán và tính điểm cho từng bộ phim.  
+Điểm số được tổng hợp từ **2 nguồn**:
+
+---
+
+#### Nguồn A: Xu hướng chung (**Global Trend**)
+
+**Logic:**  
+> Phim nào đang được nhiều người xem thì điểm cao.
+
+**Trọng số thời gian (Time Decay):**
+
+| Thời gian | Hệ số |
+|---------|------|
+| Tuần hiện tại | 1.0 |
+| Tuần trước | 0.7 |
+| 2 tuần trước | 0.4 |
+| 3 tuần trước | 0.2 |
+
+**Mục đích:**  
+Loại bỏ các phim đã hết hot  
+(ví dụ: phim rất hot tháng trước nhưng tháng này đã chìm).
+
+---
+
+#### Nguồn B: Xu hướng theo độ tuổi (**Age-Specific Boost**) – ⭐ ĐIỂM ĐẶC BIỆT
+
+**Logic:**  
+Nếu User thuộc một nhóm tuổi nhất định (ví dụ **Under 18**), hệ thống chỉ xét hành vi xem phim của **những user cùng nhóm tuổi**.
+
+**Cơ chế Boost (Kích thích):**
+
+- Nếu một phim xuất hiện trong danh sách xem của nhóm tuổi đó  
+→ **Nhân đôi điểm (x2.0)**
+
+**Mục đích:**  
+Giải quyết bài toán **Generation Gap**:
+- Phim hoạt hình được đẩy lên cho trẻ em
+- Phim chiến tranh / nghệ thuật được đẩy lên cho người lớn tuổi  
+
+Ngay cả khi **xu hướng chung** đang bị phim bom tấn đại chúng áp đảo.
+
+---
+
+### Bước 2: Lọc theo **Sở thích cá nhân (Genre Matching)**
+
+Sau Bước 1, hệ thống có **Top 300 phim** có điểm cao nhất  
+ **Chưa gợi ý ngay!**
+
+Hệ thống phân tích **lịch sử xem phim** của User để xây dựng **User Profile**.
+
+**Ví dụ:**  
+User thường xuyên xem `Action` và `Sci-Fi`.
+
+Hệ thống chia Top 300 phim thành 2 danh sách:
+
+- **Danh sách Ưu tiên (Priority)**  
+  - Phim đang Trending  
+  - **Có** nhãn `Action` hoặc `Sci-Fi`
+
+- **Danh sách Dự phòng (Fallback)**  
+  - Phim đang Trending  
+  - **Không** thuộc thể loại User thích  
+  - Ví dụ: phim Tâm lý / Tình cảm đang hot
+
+---
+
+### Bước 3: Trả về kết quả
+
+- Lấy phim từ **Danh sách Ưu tiên** trước
+- Nếu **chưa đủ 10 phim**  
+→ lấy thêm từ **Danh sách Dự phòng**
+
+---
+
+## 2. HAI KỊCH BẢN ĐÁNH GIÁ (EVALUATION MODES)
+
+Trong phần cuối code, hệ thống được đánh giá trên **2 tập dữ liệu khác nhau** để thể hiện rõ hiệu quả thuật toán.
+
+---
+
+### Loại 1: **Normal Mode** (Chế độ thường – Khó)
+
+**Đối tượng:**  
+- Lấy ngẫu nhiên **2000 user**
+- Bao gồm:
+  - User mới (chỉ xem 5–6 phim)
+  - User lâu năm
+
+**Vì sao điểm thấp?**  
+(*Precision ~ 8–12%*)
+
+- User mới → **Cold-start**
+- Không đủ dữ liệu lịch sử  
+→ **Bước 2 (Genre Matching) bị vô hiệu hóa**
+- Hệ thống chỉ dựa vào **Trending chung**
+→ Dễ gợi ý sai gu
+
+---
+
+### Loại 2: **Easy Mode** (Chế độ dễ – Active Users)
+
+**Đối tượng:**  
+- Chỉ chọn User đã xem **trên 150 phim**
+
+**Vì sao điểm cao hơn?**
+
+- Đây là các **“mọt phim”**
+- Lịch sử xem rất dày
+- Sở thích thể loại được xác định cực chuẩn
+
+ **Bước 2 hoạt động rất mạnh**
+
+**Kết hợp hiệu quả:**
+
+> Phim đang Hot  
+> + Đúng thể loại ruột  
+> = Tỷ lệ click & xem lại rất cao
+
+---
+
+## 3. TÓM TẮT SỰ KHÁC BIỆT
+
+| Đặc điểm | Trending Global | Trending Age-Boost |
+|-------|----------------|------------------|
+| Câu hỏi | “Mọi người đang xem gì?” | “Người bằng tuổi tôi đang xem gì?” |
+| Độ ưu tiên | Thấp hơn | Cao gấp đôi (x2.0) |
+| Mục tiêu | Bắt trend đại chúng | Cá nhân hóa theo nhân khẩu học |
+| Khắc phục | Phim cũ bị đào thải | Tránh gợi ý phim trẻ con cho người già |
+
+---

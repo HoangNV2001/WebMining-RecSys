@@ -1,0 +1,5 @@
+{
+  "name": "MovieLens Research Demo",
+  "description": "A research-grade recommendation system dashboard using MovieLens 1M dataset. Features dual-mode operation (Demo/API), real-time interaction loops, and data visualization.",
+  "requestFramePermissions": []
+}

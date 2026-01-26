@@ -37,9 +37,18 @@ Sử dụng thuật toán **Deep Deterministic Policy Gradient (DDPG)**:
   movies.dat
   ratings.dat
   ```
-
 ---
+<p align="center">
+  <img src="DRR/src/FINAL_ANALYSIS_OUTPUT/03_Activity_Heatmap.png" width="48%" />
+  <img src="DRR\src\FINAL_ANALYSIS_OUTPUT/06_Occupation_Activity.png" width="48%" />
+</p>
 
+![image](DRR/src/FINAL_ANALYSIS_OUTPUT/05_Genre_Age_Heatmap.png)
+
+<p align="center">
+  <img src="DRR/src/FINAL_ANALYSIS_OUTPUT/07_Trend_Lifespan.png" width="48%" />
+  <img src="DRR\src\FINAL_ANALYSIS_OUTPUT/08_Generation_Gap.png" width="48%" />
+</p>
 ## 🛠 Environment Setup
 
 ### Python Version
