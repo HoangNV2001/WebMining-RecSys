@@ -1,1 +1,8 @@
+!.gitignore
 .venv/
+.command/
+data/movielens-1m-dataset/*.dat
+data/out/*
+src/archives
+
+
